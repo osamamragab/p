@@ -42,6 +42,7 @@ void printfile(FILE *f) {
 	}
 
 	int i;
+	char c;
 	char *p = buf;
 	for (;;) {
 		for (i = 1; i <= pglen; i++) {
@@ -61,7 +62,8 @@ void printfile(FILE *f) {
 			p = buf + len;
 		}
 		fflush(stdout);
-		if (getchar() == 'q')
+		c = getchar();
+		if (c == EOF || c == 'q')
 			exit(0);
 		p = buf;
 		len = 0;
