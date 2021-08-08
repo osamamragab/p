@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
 
 void printfile(FILE *f) {
 	size_t len = 0;
-	size_t cap = 128;
+	size_t cap = 32*pglen + 1;
 	char *buf = malloc(cap);
 	if (buf == 0) {
 		fputs("p: can't allocate memory\n", stderr);
@@ -51,10 +51,12 @@ void printfile(FILE *f) {
 				return;
 			}
 			len += strlen(p);
-			if (len >= cap || buf[len-1] != '\n') {
-				cap *= 2;
+			if (len+1 >= cap) {
+				cap = (cap+len) * 2;
 				buf = realloc(buf, cap);
 				p = buf;
+				if (buf[len-1] != '\n')
+					i--;
 			}
 			if (i == pglen && buf[len-1] == '\n')
 				buf[len-1] = '\0';
