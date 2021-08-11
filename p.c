@@ -9,7 +9,8 @@ static int pglen = PGDEF;
 void printfile(FILE *f);
 
 int main(int argc, char *argv[]) {
-	FILE *f = 0;
+	int n = 0;
+	FILE *f = NULL;
 	while (argc > 1) {
 		argc--; argv++;
 		if (*argv[0] == '-') {
@@ -18,15 +19,16 @@ int main(int argc, char *argv[]) {
 				pglen = PGDEF;
 			continue;
 		}
+		n++;
 		f = fopen(argv[0], "r");
-		if (f == 0){
+		if (f == NULL) {
 			fprintf(stderr, "p: can't open %s\n", argv[0]);
 			continue;
 		}
 		printfile(f);
 		fclose(f);
 	}
-	if (f == 0)
+	if (n == 0)
 		printfile(stdin);
 
 	return 0;
@@ -34,9 +36,9 @@ int main(int argc, char *argv[]) {
 
 void printfile(FILE *f) {
 	size_t len = 0;
-	size_t cap = 32*pglen + 1;
-	char *buf = malloc(cap);
-	if (buf == 0) {
+	size_t cap = 32 * pglen;
+	char *buf = malloc(cap+1);
+	if (buf == NULL) {
 		fputs("p: can't allocate memory\n", stderr);
 		exit(1);
 	}
@@ -44,24 +46,26 @@ void printfile(FILE *f) {
 	int i;
 	char c;
 	char *p = buf;
+	size_t plen = 0;
 	for (;;) {
 		for (i = 1; i <= pglen; i++) {
-			if (fgets(p, cap-len, f) == 0) {
+			if (fgets(p, (cap-len)+1, f) == NULL) {
 				free(buf);
 				return;
 			}
-			len += strlen(p);
-			if (len+1 >= cap) {
+			plen = strlen(p);
+			len += plen;
+			if (len >= cap) {
 				cap = (cap+len) * 2;
-				buf = realloc(buf, cap);
-				p = buf;
-				if (buf[len-1] != '\n')
+				buf = realloc(buf, cap+1);
+				p = buf + (len-plen);
+				if (p[plen-1] != '\n')
 					i--;
 			}
-			if (i == pglen && buf[len-1] == '\n')
-				buf[len-1] = '\0';
+			if (i == pglen && p[plen-1] == '\n')
+				p[plen-1] = '\0';
 			fputs(p, stdout);
-			p = buf + len;
+			p += plen;
 		}
 		fflush(stdout);
 		c = getchar();
