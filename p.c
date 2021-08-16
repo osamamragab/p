@@ -4,11 +4,17 @@
 
 #define PGDEF 22
 
+static FILE *cons;
 static int pglen = PGDEF;
 
 void printfile(FILE *f);
 
 int main(int argc, char *argv[]) {
+	if ((cons = fopen("/dev/tty", "r")) == NULL) {
+		fputs("p: can't open /dev/tty", stderr);
+		exit(1);
+	}
+
 	int n = 0;
 	FILE *f = NULL;
 	while (argc > 1) {
@@ -44,12 +50,12 @@ void printfile(FILE *f) {
 	}
 
 	int i;
-	char c;
 	char *p = buf;
 	size_t plen = 0;
 	for (;;) {
 		for (i = 1; i <= pglen; i++) {
 			if (fgets(p, (cap-len)+1, f) == NULL) {
+				fputs(buf, stdout);
 				free(buf);
 				return;
 			}
@@ -62,16 +68,16 @@ void printfile(FILE *f) {
 				if (p[plen-1] != '\n')
 					i--;
 			}
-			if (i == pglen && p[plen-1] == '\n')
-				p[plen-1] = '\0';
-			fputs(p, stdout);
 			p += plen;
 		}
+		if (buf[len-1] == '\n')
+			buf[len-1] = '\0';
+		fputs(buf, stdout);
 		fflush(stdout);
-		c = getchar();
-		if (c == EOF || c == 'q')
+		p = fgets(buf, cap+1, cons);
+		if (p == NULL || *p == 'q')
 			exit(0);
-		p = buf;
+		*p = '\0';
 		len = 0;
 	}
 }
