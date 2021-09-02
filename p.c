@@ -50,8 +50,8 @@ void printfile(FILE *f) {
 	}
 
 	int i;
+	size_t plen;
 	char *p = buf;
-	size_t plen = 0;
 	for (;;) {
 		for (i = 1; i <= pglen; i++) {
 			if (fgets(p, (cap-len)+1, f) == NULL) {
@@ -74,10 +74,9 @@ void printfile(FILE *f) {
 			buf[len-1] = '\0';
 		fputs(buf, stdout);
 		fflush(stdout);
-		p = fgets(buf, cap+1, cons);
-		if (p == NULL || *p == 'q')
-			exit(0);
-		*p = '\0';
+		p = buf;
 		len = 0;
+		if (fgets(p, cap+1, cons) == NULL || *p == 'q')
+			exit(0);
 	}
 }
