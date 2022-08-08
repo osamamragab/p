@@ -13,4 +13,12 @@ p: $(OBJ)
 clean:
 	rm -f p $(OBJ)
 
-.PHONY: clean
+install: p
+	mkdir -p $(DESTDIR)/bin
+	cp -f p $(DESTDIR)/bin
+	chmod 755 $(DESTDIR)/bin/p
+
+uninstall:
+	rm -f $(DESTDIR)/bin/p
+
+.PHONY: clean install uninstall
